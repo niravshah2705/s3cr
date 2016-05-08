@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <script>
+         function getcustomer() {
+           if (window.XMLHttpRequest) {
+             // code for IE7+, Firefox, Chrome, Opera, Safari
+             xmlhttp=new XMLHttpRequest();
+           } else { // code for IE6, IE5
+             xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+           }
+           xmlhttp.onreadystatechange=function() {
+             if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+               var strCust=xmlhttp.responseText;
+               var x = document.getElementById("selUsers");
+               var listCust = strCust.split('/');
+                 for (a in listCust){
+                         var option = document.createElement("option");
+                         option.text =listCust[a];
+                         option.value=listCust[a];
+                         if (listCust[a]!=""){
+                                 x.appendChild(option);
+                         }
+                 }
+             }
+           }
+           xmlhttp.open("GET","s3cr.php?action=ListCustomer",true);
+           xmlhttp.send();
+         }
+         function showFiles(str) {
+           if (str=="") {
+             document.getElementById("txtHint").innerHTML="";
+             return;
+           }
+           if (window.XMLHttpRequest) {
+             // code for IE7+, Firefox, Chrome, Opera, Safari
+             xmlhttp=new XMLHttpRequest();
+           } else { // code for IE6, IE5
+             xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+           }
+           xmlhttp.onreadystatechange=function() {
+             if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+               document.getElementById("txtHint").innerHTML=xmlhttp.responseText;
+             }
+           }
+         //      $("#formupload").attr("action", "s3cr.php?action=UploadFile&customer="+str);
+                 document.formupload.action='s3cr.php?action=UploadFile&customer='+str;
+           xmlhttp.open("GET","s3cr.php?action=Listfiles&customer="+str,true);
+           xmlhttp.send();
+         }
+         
+         function addcustomer(str){
+           if (str=="") {
+             document.getElementById("txtaddcust").innerHTML="";
+             return;
+           }
+           if (window.XMLHttpRequest) {
+             // code for IE7+, Firefox, Chrome, Opera, Safari
+             xmlhttp=new XMLHttpRequest();
+           } else { // code for IE6, IE5
+             xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+           }
+           xmlhttp.onreadystatechange=function() {
+             if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+               document.getElementById("txtaddcust").innerHTML=xmlhttp.responseText;
+             }
+           }
+         var x = document.getElementById("selUsers");
+         var option = document.createElement("option");
+         option.text = str;
+         x.add(option);
+         //  document.getElementById("users").add(str);
+           xmlhttp.open("GET","s3cr.php?action=addcustomer&customer="+str,true);
+           xmlhttp.send();
+         }
+         function uploadFile() {
+              var fd = new FormData();
+         var x = document.getElementById("selUsers");
+         if (x.value == ""){
+         return;
+         }
+              fd.append("fileToUpload", document.getElementById('fileToUpload').files[0]);
+              var xhr = new XMLHttpRequest();
+              xhr.upload.addEventListener("progress", uploadProgress, false);
+              xhr.addEventListener("load", uploadComplete, false);
+              xhr.addEventListener("error", uploadFailed, false);
+              xhr.addEventListener("abort", uploadCanceled, false);
+              xhr.open("POST", "s3cr.php?action=UploadFile&customer="+x.value);
+              xhr.send(fd);
+            }
+         
+            function uploadProgress(evt) {
+              if (evt.lengthComputable) {
+                var percentComplete = Math.round(evt.loaded * 100 / evt.total);
+                document.getElementById('progressNumber').innerHTML = percentComplete.toString() + '%';
+              }
+              else {
+                document.getElementById('progressNumber').innerHTML = 'unable to compute';
+              }
+            }
+         
+            function uploadComplete(evt) {
+              /* This event is raised when the server send back a response */
+              document.getElementById('statusDescription').innerHTML =evt.target.responseText;
+            }
+         
+            function uploadFailed(evt) {
+              document.getElementById('statusDescription').innerHTML = "There was an error attempting to upload the file.";
+            }
+         
+            function uploadCanceled(evt) {
+              document.getElementById('statusDescription').innerHTML ="The upload has been canceled by the user or the browser dropped the connection.";
+            }
+      </script>
+   </head>
+   <body onload="getcustomer()" >
+
+<table border="0" cellpadding="20" cellspacing="10" style="width: 1000px;">
+	<tbody>
+		<tr>
+			<td>&nbsp;</td>
+			<td>
+	<h2 style="text-align: center;">S3CR demo&nbsp;</h2>
+	<p>This page demonstrates multi-tenant s3 content repository example. API is developed in php.</p>
+	<p>Below drop down shows customers registered/created:</p>
+      <form>
+         <select id="selUsers" name="users" onchange="showFiles(this.value)">
+            <option value="">Select a Customer:</option>
+         </select>
+      </form>
+      <br>
+	<p><b>1. Files being uploaded for the customer. You can click the url to download file from the s3.</b></p>
+      <div id="txtHint">Filelist will be listed here.</div>
+        <p>&nbsp;</p>
+
+	<p><b>2. Upload files to the customer:</b></p>
+      <form name=formupload action="s3cr.php?action=UploadFile&customer=" method="post" enctype="multipart/form-data">
+         Select file to upload:
+         <input type="file" name="fileToUpload" id="fileToUpload">
+         <input type="button" value="Upload" onclick="uploadFile()" >
+         <div id="progressNumber"></div>
+         <div id="statusDescription"></div>
+      </form>
+	<p>&nbsp;</p>
+	<p><b>3. Add new customer</b></p>
+
+      <form name=formaddcustomer" >
+         Add Customer: <input type="text" name=txtcustomer>
+         <input type="button" value="submit" name="custsubmit" onclick="addcustomer(txtcustomer.value)">
+      </form>
+      <div id="txtaddcust"></div>
+</td>
+		</tr>
+	</tbody>
+</table>
+      <!--iframe src="s3cr.php?action=ListCustomer"></iframe >
+         <iframe src="s3cr.php?action=Listfiles&customer=cust1"></iframe -->
+   </body>
+</html>
